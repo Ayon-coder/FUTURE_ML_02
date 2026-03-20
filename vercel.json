@@ -22,8 +22,7 @@
   ],
   "functions": {
     "backend/api/app.py": {
-      "includeFiles": "backend/saved_models/**",
-      "maxDuration": 60
+      "includeFiles": "backend/saved_models/**"
     }
   }
 }
