@@ -90,7 +90,11 @@ classifyForm.addEventListener('submit', async (e) => {
             showError(data.error || 'Classification failed');
         }
     } catch (e) {
-        showError('Cannot connect to API. Make sure the backend is running on port 5000.');
+        if (e instanceof SyntaxError) {
+            showError('API Timeout: The prediction took longer than 10 seconds to execute. Please try again.');
+        } else {
+            showError(`Fetch Error: ${e.message}`);
+        }
     } finally {
         classifyBtn.classList.remove('loading');
         classifyBtn.disabled = false;

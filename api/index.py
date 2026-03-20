@@ -5,7 +5,6 @@ import re
 import traceback
 import joblib
 import numpy as np
-import nltk
 from scipy.sparse import hstack, csr_matrix
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -14,26 +13,32 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# ── NLTK Setup for Vercel ─────────────────────────────────────
-NLTK_DATA_DIR = '/tmp/nltk_data'
-os.makedirs(NLTK_DATA_DIR, exist_ok=True)
-if NLTK_DATA_DIR not in nltk.data.path:
-    nltk.data.path.append(NLTK_DATA_DIR)
+# ── Inference Preprocessing ──────────────────────────────────
+# Hardcoded stopwords to skip NLTK downloads (prevents Vercel 10s timeout)
+stop_words = set(["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"])
 
-try:
-    nltk.download('punkt', download_dir=NLTK_DATA_DIR, quiet=True)
-    nltk.download('stopwords', download_dir=NLTK_DATA_DIR, quiet=True)
-    nltk.download('wordnet', download_dir=NLTK_DATA_DIR, quiet=True)
-    nltk.download('omw-1.4', download_dir=NLTK_DATA_DIR, quiet=True)
-    
-    from nltk.corpus import stopwords
-    from nltk.stem import WordNetLemmatizer
-    stop_words = set(stopwords.words('english'))
-    lemmatizer = WordNetLemmatizer()
-except Exception as e:
-    print(f"Warning NLTK: {e}")
-    stop_words = set()
-    lemmatizer = None
+def clean_text(text: str) -> str:
+    if not isinstance(text, str): return ""
+    text = text.lower()
+    text = re.sub(r'<[^>]+>', ' ', text)
+    text = re.sub(r'http\S+|www\.\S+', ' ', text)
+    text = re.sub(r'\S+@\S+', ' ', text)
+    text = re.sub(r'[^a-zA-Z\s]', ' ', text)
+    return re.sub(r'\s+', ' ', text).strip()
+
+def preprocess_text(text: str) -> str:
+    text = clean_text(text)
+    words = text.split()
+    words = [w for w in words if w not in stop_words]
+    # Note: Skipping lemmatization for Vercel speed. 
+    # High-value keywords (refund, cancel, technical) usually remain accurate.
+    return ' '.join(words)
+
+def safe_encode(encoder, value):
+    try:
+        return int(encoder.transform([value])[0])
+    except (ValueError, KeyError):
+        return 0
 
 # ── Globals ──────────────────────────────────────────────────
 # Paths
@@ -69,31 +74,6 @@ def load_models():
 
 # Attempt to load immediately
 load_models()
-
-# ── Preprocessing Logic ──────────────────────────────────────
-def clean_text(text: str) -> str:
-    if not isinstance(text, str): return ""
-    text = text.lower()
-    text = re.sub(r'<[^>]+>', ' ', text)
-    text = re.sub(r'http\S+|www\.\S+', ' ', text)
-    text = re.sub(r'\S+@\S+', ' ', text)
-    text = re.sub(r'[^a-zA-Z\s]', ' ', text)
-    return re.sub(r'\s+', ' ', text).strip()
-
-def preprocess_text(text: str) -> str:
-    text = clean_text(text)
-    words = text.split()
-    if stop_words:
-        words = [w for w in words if w not in stop_words]
-    if lemmatizer:
-        words = [lemmatizer.lemmatize(w) for w in words]
-    return ' '.join(words)
-
-def safe_encode(encoder, value):
-    try:
-        return int(encoder.transform([value])[0])
-    except (ValueError, KeyError):
-        return 0
 
 # ── Routes ───────────────────────────────────────────────────
 @app.route('/api/health', methods=['GET'])
@@ -164,7 +144,7 @@ def predict():
                 cls: round(float(prob), 4) for cls, prob in zip(priority_encoder.classes_, pri_proba[0])
             }
         }
-        return jsonify({'success': True, 'predictions': [res]})
+        return jsonify({'success': True, 'prediction': res})
     except Exception as e:
         return jsonify({'error': f'Prediction failed: {str(e)}', 'trace': traceback.format_exc()}), 500
 
@@ -176,7 +156,7 @@ def get_metrics():
                 'error': 'Metrics not found. Please train models first.',
                 'details': load_error_reason
             }), 404
-    return jsonify(metrics_data)
+    return jsonify({ 'success': True, 'metrics': metrics_data })
 
 # Allow local testing
 if __name__ == '__main__':
