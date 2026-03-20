@@ -64,7 +64,7 @@ def load_models():
 
 # ── API Routes ───────────────────────────────────────────────
 
-@app.route('/health', methods=['GET'])
+@app.route('/api/health', methods=['GET'])
 def health():
     """Health check endpoint."""
     models_loaded = trainer is not None and feature_extractor is not None
@@ -75,7 +75,7 @@ def health():
     })
 
 
-@app.route('/predict', methods=['POST'])
+@app.route('/api/predict', methods=['POST'])
 def predict():
     """
     Classify a support ticket.
@@ -139,7 +139,7 @@ def predict():
         return jsonify({'error': f'Prediction failed: {str(e)}'}), 500
 
 
-@app.route('/metrics', methods=['GET'])
+@app.route('/api/metrics', methods=['GET'])
 def get_metrics():
     """Return model evaluation metrics."""
     if metrics_data is None:

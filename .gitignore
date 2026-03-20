@@ -12,8 +12,8 @@ venv/
 env/
 .venv/
 
-# Saved models (large binary files)
-backend/saved_models/*.pkl
+# Saved models
+# ML models are included for Vercel deployment
 
 # IDE
 .vscode/

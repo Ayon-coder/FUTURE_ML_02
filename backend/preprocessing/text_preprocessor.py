@@ -10,25 +10,40 @@ Handles cleaning and preprocessing of raw customer support ticket text.
 """
 
 import re
+import os
 import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
 
-# Ensure required NLTK data is downloaded
+try:
+    from nltk.corpus import stopwords
+    from nltk.stem import WordNetLemmatizer
+except ImportError:
+    pass
+
+# Ensure NLTK data is downloaded to a writable directory (/tmp on Vercel)
+NLTK_DATA_DIR = '/tmp/nltk_data'
+os.makedirs(NLTK_DATA_DIR, exist_ok=True)
+if NLTK_DATA_DIR not in nltk.data.path:
+    nltk.data.path.append(NLTK_DATA_DIR)
+
 def download_nltk_data():
-    """Download required NLTK data packages."""
-    packages = ['stopwords', 'wordnet', 'omw-1.4', 'punkt', 'punkt_tab']
-    for pkg in packages:
+    """Download required NLTK datasets."""
+    resources = ['punkt', 'stopwords', 'wordnet', 'omw-1.4'] # 'punkt_tab' is not a standard NLTK resource, removed.
+    for res in resources:
         try:
-            nltk.data.find(f'corpora/{pkg}' if pkg != 'punkt' and pkg != 'punkt_tab' else f'tokenizers/{pkg}')
-        except LookupError:
-            nltk.download(pkg, quiet=True)
+            nltk.download(res, download_dir=NLTK_DATA_DIR, quiet=True)
+        except Exception as e:
+            print(f"Warning: Failed to download {res} - {e}")
 
+# Download on import
 download_nltk_data()
 
-# Initialize once
-_lemmatizer = WordNetLemmatizer()
-_stop_words = set(stopwords.words('english'))
+# Initialize NLP tools
+try:
+    stop_words = set(stopwords.words('english'))
+    lemmatizer = WordNetLemmatizer()
+except Exception:
+    stop_words = set()
+    lemmatizer = None
 
 
 def clean_text(text: str) -> str:
@@ -67,14 +82,16 @@ def clean_text(text: str) -> str:
 def remove_stopwords(text: str) -> str:
     """Remove English stopwords from text."""
     words = text.split()
-    filtered = [w for w in words if w not in _stop_words]
+    filtered = [w for w in words if w not in stop_words]
     return ' '.join(filtered)
 
 
 def lemmatize_text(text: str) -> str:
     """Lemmatize each word in the text."""
     words = text.split()
-    lemmatized = [_lemmatizer.lemmatize(w) for w in words]
+    if lemmatizer is None:
+        return text
+    lemmatized = [lemmatizer.lemmatize(w) for w in words]
     return ' '.join(lemmatized)
 
 
