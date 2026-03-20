@@ -19,5 +19,11 @@
       "src": "/(.*)",
       "dest": "/frontend/$1"
     }
-  ]
+  ],
+  "functions": {
+    "backend/api/app.py": {
+      "includeFiles": "backend/saved_models/**",
+      "maxDuration": 60
+    }
+  }
 }

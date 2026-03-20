@@ -35,9 +35,12 @@ feature_extractor = None
 metrics_data = None
 
 
+import traceback
+load_error_reason = "Not attempted yet"
+
 def load_models():
     """Load trained models and vectorizer."""
-    global trainer, feature_extractor, metrics_data
+    global trainer, feature_extractor, metrics_data, load_error_reason
     
     try:
         # Load classifier models
@@ -57,8 +60,8 @@ def load_models():
         print("✅ Models loaded successfully")
         return True
     except Exception as e:
-        print(f"⚠️  Failed to load models: {e}")
-        print("   Run 'python main.py' first to train models.")
+        load_error_reason = f"{type(e).__name__}: {str(e)}\n\n{traceback.format_exc()}"
+        print(f"⚠️  Failed to load models: {load_error_reason}")
         return False
 
 
@@ -71,7 +74,8 @@ def health():
     return jsonify({
         'status': 'healthy' if models_loaded else 'models_not_loaded',
         'models_loaded': models_loaded,
-        'message': 'Support Ticket Classifier API is running'
+        'message': 'Support Ticket Classifier API is running',
+        'error': load_error_reason if not models_loaded else None
     })
 
 
