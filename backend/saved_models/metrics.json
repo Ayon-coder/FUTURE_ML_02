@@ -1,0 +1,152 @@
+{
+  "category": {
+    "model_name": "Category Classifier (LinearSVC)",
+    "accuracy": 0.2166,
+    "precision_weighted": 0.1749,
+    "recall_weighted": 0.2166,
+    "f1_weighted": 0.1291,
+    "per_class": {
+      "Billing inquiry": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "support": 327
+      },
+      "Cancellation request": {
+        "precision": 0.4286,
+        "recall": 0.0088,
+        "f1_score": 0.0173,
+        "support": 339
+      },
+      "Product inquiry": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1_score": 0.0,
+        "support": 328
+      },
+      "Refund request": {
+        "precision": 0.2162,
+        "recall": 0.584,
+        "f1_score": 0.3156,
+        "support": 351
+      },
+      "Technical issue": {
+        "precision": 0.2152,
+        "recall": 0.4556,
+        "f1_score": 0.2923,
+        "support": 349
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        0,
+        168,
+        159
+      ],
+      [
+        0,
+        3,
+        0,
+        197,
+        139
+      ],
+      [
+        0,
+        1,
+        0,
+        190,
+        137
+      ],
+      [
+        0,
+        1,
+        0,
+        205,
+        145
+      ],
+      [
+        0,
+        2,
+        0,
+        188,
+        159
+      ]
+    ],
+    "class_names": [
+      "Billing inquiry",
+      "Cancellation request",
+      "Product inquiry",
+      "Refund request",
+      "Technical issue"
+    ],
+    "total_samples": 1694
+  },
+  "priority": {
+    "model_name": "Priority Classifier (RandomForest)",
+    "accuracy": 0.258,
+    "precision_weighted": 0.2611,
+    "recall_weighted": 0.258,
+    "f1_weighted": 0.2572,
+    "per_class": {
+      "Critical": {
+        "precision": 0.2565,
+        "recall": 0.2902,
+        "f1_score": 0.2723,
+        "support": 441
+      },
+      "High": {
+        "precision": 0.2495,
+        "recall": 0.2972,
+        "f1_score": 0.2713,
+        "support": 424
+      },
+      "Low": {
+        "precision": 0.2295,
+        "recall": 0.216,
+        "f1_score": 0.2225,
+        "support": 375
+      },
+      "Medium": {
+        "precision": 0.3027,
+        "recall": 0.2247,
+        "f1_score": 0.2579,
+        "support": 454
+      }
+    },
+    "confusion_matrix": [
+      [
+        128,
+        132,
+        93,
+        88
+      ],
+      [
+        126,
+        126,
+        85,
+        87
+      ],
+      [
+        123,
+        111,
+        81,
+        60
+      ],
+      [
+        122,
+        136,
+        94,
+        102
+      ]
+    ],
+    "class_names": [
+      "Critical",
+      "High",
+      "Low",
+      "Medium"
+    ],
+    "total_samples": 1694
+  }
+}

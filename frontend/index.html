@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered customer support ticket classifier and priority assignment system. Automatically categorize and prioritize support tickets using Machine Learning.">
+    <title>TicketIQ — AI Support Ticket Classifier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Animated background particles -->
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <div class="logo-icon">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <rect x="2" y="2" width="24" height="24" rx="6" stroke="url(#logoGrad)" stroke-width="2.5"/>
+                    <path d="M8 10h12M8 14h8M8 18h10" stroke="url(#logoGrad)" stroke-width="2" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28">
+                            <stop stop-color="#6366f1"/>
+                            <stop offset="1" stop-color="#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <span class="brand-text">Ticket<span class="brand-accent">IQ</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="#classify" class="nav-link active">Classify</a>
+            <a href="#metrics" class="nav-link">Model Metrics</a>
+            <a href="#about" class="nav-link">About</a>
+        </div>
+        <div class="nav-status" id="apiStatus">
+            <span class="status-dot"></span>
+            <span class="status-text">Connecting...</span>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-icon">⚡</span>
+                <span>ML-Powered Classification</span>
+            </div>
+            <h1 class="hero-title">
+                Classify & Prioritize<br>
+                <span class="gradient-text">Support Tickets Instantly</span>
+            </h1>
+            <p class="hero-subtitle">
+                Powered by machine learning, TicketIQ automatically categorizes tickets into
+                <strong>5 categories</strong> and assigns <strong>4 priority levels</strong> — 
+                reducing response time and improving customer satisfaction.
+            </p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="statTickets">8,469</span>
+                    <span class="stat-label">Tickets Trained</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value" id="statCategories">5</span>
+                    <span class="stat-label">Categories</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value" id="statPriorities">4</span>
+                    <span class="stat-label">Priority Levels</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Classify Section -->
+    <section class="section" id="classify">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Classify a Ticket</h2>
+                <p class="section-desc">Enter a support ticket's subject and description to get instant AI classification</p>
+            </div>
+
+            <div class="classify-grid">
+                <!-- Input Form -->
+                <div class="glass-card form-card">
+                    <div class="card-header">
+                        <div class="card-icon input-icon">📝</div>
+                        <h3>Ticket Details</h3>
+                    </div>
+                    <form id="classifyForm" class="ticket-form">
+                        <div class="form-group">
+                            <label for="ticketSubject">Subject</label>
+                            <input 
+                                type="text" 
+                                id="ticketSubject" 
+                                placeholder="e.g., Payment issue, Product not working, Account locked..."
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketDescription">Description</label>
+                            <textarea 
+                                id="ticketDescription" 
+                                rows="6"
+                                placeholder="Describe the customer's issue in detail..."
+                                required
+                            ></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" id="classifyBtn">
+                            <span class="btn-text">Classify Ticket</span>
+                            <span class="btn-icon">→</span>
+                            <div class="btn-loader" id="btnLoader"></div>
+                        </button>
+                    </form>
+
+                    <!-- Quick Examples -->
+                    <div class="quick-examples">
+                        <span class="examples-label">Try an example:</span>
+                        <div class="example-chips">
+                            <button class="chip" data-subject="Payment issue" data-desc="I was charged twice for my subscription last month. The duplicate charge of $29.99 appeared on my credit card statement. I need a refund for the extra charge immediately.">Billing</button>
+                            <button class="chip" data-subject="Software not working" data-desc="My application keeps crashing every time I try to open it. I've tried reinstalling but the issue persists. The error message says 'Fatal Error: Application has stopped responding'. This is affecting my daily work.">Technical</button>
+                            <button class="chip" data-subject="Cancel my subscription" data-desc="I would like to cancel my premium subscription effective immediately. I no longer need the service and want to stop all future charges to my account.">Cancellation</button>
+                            <button class="chip" data-subject="Product features inquiry" data-desc="I'm interested in learning more about the enterprise plan features. Can you provide a comparison between the basic and enterprise plans? I need to know about API access limits and team collaboration features.">Product</button>
+                            <button class="chip" data-subject="Request refund" data-desc="I purchased a product 3 days ago but it's defective and not working as advertised. I want a full refund processed back to my original payment method as soon as possible.">Refund</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="glass-card results-card" id="resultsCard">
+                    <div class="card-header">
+                        <div class="card-icon result-icon">🎯</div>
+                        <h3>Classification Result</h3>
+                    </div>
+                    
+                    <!-- Empty state -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-illustration">
+                            <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+                                <circle cx="60" cy="60" r="50" stroke="rgba(99, 102, 241, 0.2)" stroke-width="2" stroke-dasharray="8 4"/>
+                                <path d="M40 55l10 10 30-30" stroke="rgba(99, 102, 241, 0.3)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="60" cy="60" r="20" fill="rgba(99, 102, 241, 0.05)"/>
+                            </svg>
+                        </div>
+                        <p>Submit a ticket to see the classification results</p>
+                    </div>
+
+                    <!-- Results content -->
+                    <div class="results-content" id="resultsContent" style="display: none;">
+                        <!-- Category Result -->
+                        <div class="result-block">
+                            <div class="result-label">Category</div>
+                            <div class="result-value" id="resultCategory">
+                                <span class="category-badge" id="categoryBadge">—</span>
+                            </div>
+                            <div class="confidence-bar-wrapper">
+                                <div class="confidence-label">
+                                    <span>Confidence</span>
+                                    <span id="categoryConfidence">—</span>
+                                </div>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill category-fill" id="categoryFill"></div>
+                                </div>
+                            </div>
+                            <!-- Category probabilities -->
+                            <div class="probabilities" id="categoryProbs"></div>
+                        </div>
+
+                        <!-- Priority Result -->
+                        <div class="result-block">
+                            <div class="result-label">Priority</div>
+                            <div class="result-value">
+                                <span class="priority-badge" id="priorityBadge">—</span>
+                            </div>
+                            <div class="confidence-bar-wrapper">
+                                <div class="confidence-label">
+                                    <span>Confidence</span>
+                                    <span id="priorityConfidence">—</span>
+                                </div>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill priority-fill" id="priorityFill"></div>
+                                </div>
+                            </div>
+                            <!-- Priority probabilities -->
+                            <div class="probabilities" id="priorityProbs"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Metrics Section -->
+    <section class="section section-dark" id="metrics">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Model Performance</h2>
+                <p class="section-desc">Evaluation metrics from the trained ML models on the test dataset</p>
+            </div>
+
+            <!-- Metrics loading state -->
+            <div class="metrics-loading" id="metricsLoading">
+                <div class="pulse-loader"></div>
+                <p>Loading model metrics...</p>
+            </div>
+
+            <!-- Metrics content -->
+            <div class="metrics-content" id="metricsContent" style="display: none;">
+                <!-- Overall Accuracy Cards -->
+                <div class="accuracy-grid">
+                    <div class="glass-card accuracy-card">
+                        <div class="accuracy-ring" id="categoryAccuracyRing">
+                            <svg viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="52" class="ring-bg"/>
+                                <circle cx="60" cy="60" r="52" class="ring-fill category-ring" id="catRingFill"/>
+                            </svg>
+                            <span class="accuracy-value" id="catAccValue">—</span>
+                        </div>
+                        <h4>Category Classifier</h4>
+                        <p class="model-type">LinearSVC + Calibration</p>
+                        <div class="mini-metrics" id="catMiniMetrics"></div>
+                    </div>
+                    <div class="glass-card accuracy-card">
+                        <div class="accuracy-ring" id="priorityAccuracyRing">
+                            <svg viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="52" class="ring-bg"/>
+                                <circle cx="60" cy="60" r="52" class="ring-fill priority-ring" id="priRingFill"/>
+                            </svg>
+                            <span class="accuracy-value" id="priAccValue">—</span>
+                        </div>
+                        <h4>Priority Classifier</h4>
+                        <p class="model-type">Random Forest (200 trees)</p>
+                        <div class="mini-metrics" id="priMiniMetrics"></div>
+                    </div>
+                </div>
+
+                <!-- Per-class metrics -->
+                <div class="detail-grid">
+                    <div class="glass-card">
+                        <h4 class="detail-title">Category Performance (Per-Class)</h4>
+                        <div class="metrics-table-wrapper">
+                            <table class="metrics-table" id="categoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                        <th>F1-Score</th>
+                                        <th>Support</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="glass-card">
+                        <h4 class="detail-title">Priority Performance (Per-Class)</h4>
+                        <div class="metrics-table-wrapper">
+                            <table class="metrics-table" id="priorityTable">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                        <th>F1-Score</th>
+                                        <th>Support</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confusion Matrix visualization -->
+                <div class="confusion-grid">
+                    <div class="glass-card">
+                        <h4 class="detail-title">Category Confusion Matrix</h4>
+                        <div class="confusion-matrix" id="categoryCM"></div>
+                    </div>
+                    <div class="glass-card">
+                        <h4 class="detail-title">Priority Confusion Matrix</h4>
+                        <div class="confusion-matrix" id="priorityCM"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section" id="about">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-desc">The ML pipeline behind TicketIQ</p>
+            </div>
+
+            <div class="pipeline-grid">
+                <div class="pipeline-step glass-card">
+                    <div class="step-number">01</div>
+                    <div class="step-icon">📥</div>
+                    <h4>Data Collection</h4>
+                    <p>8,469 real customer support tickets with subjects, descriptions, categories, and priority labels</p>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-step glass-card">
+                    <div class="step-number">02</div>
+                    <div class="step-icon">🧹</div>
+                    <h4>Text Preprocessing</h4>
+                    <p>Text cleaning, stopword removal, lemmatization. Combine subject + description into features</p>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-step glass-card">
+                    <div class="step-number">03</div>
+                    <div class="step-icon">🔢</div>
+                    <h4>Feature Extraction</h4>
+                    <p>TF-IDF vectorization with up to 5000 features, bigrams, plus structured metadata features</p>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-step glass-card">
+                    <div class="step-number">04</div>
+                    <div class="step-icon">🤖</div>
+                    <h4>Model Training</h4>
+                    <p>LinearSVC for categories, RandomForest for priorities. Tuned with cross-validation</p>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-step glass-card">
+                    <div class="step-number">05</div>
+                    <div class="step-icon">🎯</div>
+                    <h4>Prediction API</h4>
+                    <p>Flask REST API serves real-time predictions with confidence scores for each class</p>
+                </div>
+            </div>
+
+            <div class="tech-stack glass-card">
+                <h4>Technology Stack</h4>
+                <div class="tech-badges">
+                    <span class="tech-badge">Python</span>
+                    <span class="tech-badge">scikit-learn</span>
+                    <span class="tech-badge">NLTK</span>
+                    <span class="tech-badge">Flask</span>
+                    <span class="tech-badge">Pandas</span>
+                    <span class="tech-badge">TF-IDF</span>
+                    <span class="tech-badge">LinearSVC</span>
+                    <span class="tech-badge">Random Forest</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>TicketIQ — ML-Based Support Ticket Classification System</p>
+            <p class="footer-sub">Built with scikit-learn, Flask, and ❤️</p>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
